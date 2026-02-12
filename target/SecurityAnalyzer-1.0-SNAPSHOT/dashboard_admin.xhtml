@@ -1,0 +1,157 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:p="http://primefaces.org/ui">
+<h:head>
+    <title>Administrador - Security Analyzer</title>
+    <style>
+        /* Reset y Estilos Base */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background-color: #f4f7f6; font-family: 'Segoe UI', sans-serif; overflow-x: hidden; }
+        
+        /* Encabezado con títulos centrados */
+        .header-main { 
+            background: #003366; 
+            color: white; 
+            padding: 25px 40px; 
+            border-bottom: 5px solid #cc0000; 
+            position: relative; 
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center; 
+            justify-content: center;
+        }
+        .header-main h1 { font-size: 2rem; letter-spacing: 1px; text-align: center; }
+        .header-main p { font-size: 1rem; opacity: 0.8; margin-top: 5px; font-weight: bold; text-align: center; }
+
+        /* Botón de salida */
+        .logout-container { 
+            position: absolute; 
+            right: 40px; 
+            top: 50%; 
+            transform: translateY(-50%); 
+        }
+
+        .kpi-row { display: flex; justify-content: center; gap: 20px; padding: 20px; }
+        .kpi-card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); min-width: 230px; text-align: center; }
+        
+        .dash-grid { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 20px; padding: 0 20px; }
+        .card-metrics { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-top: 5px solid #007bff; }
+        .card-alerts { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-top: 5px solid #ff8c00; max-height: 450px; overflow-y: auto; }
+        
+        .section-title { font-size: 1.1rem; font-weight: bold; color: #003366; margin-bottom: 15px; text-align: center; border-bottom: 1px solid #eee; padding-bottom: 8px; }
+        .pie-container { width: 170px; height: 170px; margin: 0 auto; }
+
+        .alert-item { 
+            display: flex; 
+            align-items: flex-start; 
+            background: #fff5f5; 
+            border-left: 5px solid #cc0000; 
+            padding: 10px; 
+            margin-bottom: 8px; 
+            border-radius: 4px; 
+        }
+        
+        .alert-num { 
+            background: #cc0000; 
+            color: white; 
+            width: 24px;  
+            height: 24px; 
+            border-radius: 50%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            margin-right: 12px; 
+            font-weight: bold; 
+            font-size: 0.85rem;
+            flex-shrink: 0; 
+        }
+    </style>
+</h:head>
+<h:body>
+    <div class="header-main">
+        <h1>SISTEMA DE ANÁLISIS DE SEGURIDAD</h1>
+        <p>ADMINISTRADOR: #{loginController.userAuthenticated.username.toUpperCase()}</p>
+        
+        <h:form styleClass="logout-container">
+            <p:commandButton value="Cerrar Sesión" action="login?faces-redirect=true" 
+                             ajax="false" immediate="true" icon="pi pi-sign-out" 
+                             styleClass="ui-button-danger" />
+        </h:form>
+    </div>
+
+    <h:form id="form">
+        <div class="kpi-row">
+            <div class="kpi-card" style="border-top: 4px solid #cc0000;">
+                <p style="color: #666; font-size: 0.8rem; font-weight: bold;">CRÍTICOS PENDIENTES</p>
+                <h2 style="font-size: 2.2rem; color: #cc0000;">#{incidentController.criticalCount}</h2>
+            </div>
+            <div class="kpi-card" style="border-top: 4px solid #28a745;">
+                <p style="color: #666; font-size: 0.8rem; font-weight: bold;">SEGURIDAD GLOBAL</p>
+                <h2 style="font-size: 2.2rem; color: #28a745;">#{incidentController.securityLevel}%</h2>
+            </div>
+        </div>
+
+        <div class="dash-grid">
+            <div class="card-metrics">
+                <h3 class="section-title">MÉTRICAS DE SALUD DEL SISTEMA</h3>
+                <div style="display: flex; justify-content: space-around; align-items: center;">
+                    <div style="text-align: center;">
+                        <p style="font-size: 0.75rem; font-weight: bold; color: #666; margin-bottom: 5px;">ESTADO ACTUAL</p>
+                        <div class="pie-container"><p:pieChart model="#{incidentController.pieStatus}" /></div>
+                    </div>
+                    <div style="text-align: center;">
+                        <p style="font-size: 0.75rem; font-weight: bold; color: #666; margin-bottom: 5px;">CANTIDAD DE FALLOS</p>
+                        <div class="pie-container"><p:pieChart model="#{incidentController.piePriority}" /></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-alerts">
+                <h3 class="section-title" style="color: #cc0000; text-align: left;">PRIORIDAD: ALERTAS CRÍTICAS</h3>
+                <ui:repeat value="#{incidentController.criticalIncidents}" var="crit" varStatus="status">
+                    <div class="alert-item">
+                        <div class="alert-num">#{status.index + 1}</div>
+                        <div>
+                            <p style="font-weight: bold; color: #b30000; font-size: 0.9rem; line-height: 1.2;">#{crit.description}</p>
+                            <p style="font-size: 0.75rem; color: #666; margin-top: 3px;">Origen: #{crit.sourceOrigin}</p>
+                        </div>
+                    </div>
+                </ui:repeat>
+                <h:outputText value="Sistema Protegido" rendered="#{empty incidentController.criticalIncidents}" 
+                              style="display:block; text-align:center; color:#999; margin-top:20px; font-style: italic;"/>
+            </div>
+        </div>
+
+        <div style="padding: 20px;">
+            <p:dataTable value="#{incidentController.allIncidents}" var="inc" rows="5" 
+                         paginator="true" paginatorPosition="bottom" style="font-size: 0.9rem;">
+                
+                <p:column headerText="Descripción">#{inc.description}</p:column>
+                
+                <p:column headerText="Prioridad" width="130">
+                    <h:outputText value="#{inc.priorityText}" 
+                        style="font-weight:bold; color: #{inc.priority == 4 ? '#cc0000' : (inc.priority == 3 ? '#ffcc00' : (inc.priority == 2 ? '#007bff' : '#28a745'))}" />
+                </p:column>
+                
+                <p:column headerText="Estado" width="120" style="text-align:center;">
+                    <p:tag value="#{inc.status}" severity="#{inc.status == 'PENDIENTE' ? 'warning' : 'success'}" rounded="true" />
+                </p:column>
+                
+                <p:column headerText="Acciones" width="130" style="text-align:center;">
+                    <p:commandButton icon="pi pi-check" action="#{incidentController.markAsResolved(inc.id)}" 
+                                     update="@form" disabled="#{inc.status == 'CORREGIDO'}" 
+                                     styleClass="ui-button-success ui-button-flat" title="Corregir" />
+                    
+                    <p:commandButton icon="pi pi-trash" action="#{incidentController.delete(inc.id)}" 
+                                     update="@form" styleClass="ui-button-danger ui-button-flat" title="Eliminar" />
+                </p:column>
+            </p:dataTable>
+        </div>
+    </h:form>
+</h:body>
+</html>

@@ -1,0 +1,115 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui">
+<h:head>
+    <title>Mantenimiento - Operador</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background-color: #f4f7f6; font-family: 'Segoe UI', sans-serif; overflow-x: hidden; }
+        
+        .header-main { 
+            background: #003366; 
+            color: white; 
+            width: 100vw; 
+            padding: 20px 0; 
+            position: relative; 
+            border-bottom: 6px solid #28a745; 
+            text-align: center; 
+        }
+        
+        .header-main h1 { 
+            font-size: 1.8rem; 
+            margin: 0;
+            letter-spacing: 1px;
+        }
+        
+        .header-main p { 
+            font-size: 0.9rem; 
+            opacity: 0.8; 
+            margin-top: 5px; 
+            font-weight: bold;
+        }
+
+        .logout-container {
+            position: absolute;
+            right: 40px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        
+        .form-content { padding: 40px; }
+
+        .btn-blue {
+            background-color: #007bff !important;
+            border-color: #007bff !important;
+            color: white !important;
+        }
+    </style>
+</h:head>
+<h:body>
+    <div class="header-main">
+        <h1>PANEL DE MANTENIMIENTO</h1>
+        <p>OPERADOR: #{loginController.userAuthenticated.username.toUpperCase()}</p>
+        
+        <h:form styleClass="logout-container">
+            <p:commandButton value="Cerrar Sesión" action="login?faces-redirect=true" 
+                             ajax="false" immediate="true" icon="pi pi-sign-out" 
+                             styleClass="ui-button-danger" />
+        </h:form>
+    </div>
+
+    <div class="form-content">
+        <h:form id="formOp">
+            <p:growl id="msgs" showDetail="true" />
+
+            <p:panel header="Nuevo Registro de Seguridad" style="margin-bottom: 30px;">
+                <h:panelGrid columns="4" cellpadding="10" style="width: 100%;">
+                    <p:outputLabel value="Descripción:" style="font-weight:bold" />
+                    <p:inputText value="#{incidentController.newIncident.description}" 
+                                 required="true" requiredMessage="La descripción es obligatoria" 
+                                 style="width:100%" />
+
+                    <p:outputLabel value="      Nivel de Prioridad:" style="font-weight:bold" />
+                    <p:selectOneMenu value="#{incidentController.newIncident.priority}" 
+                                     required="true" requiredMessage="Debe seleccionar un nivel"
+                                     style="width:100%">
+                        <f:selectItem itemLabel="Seleccionar nivel" itemValue="#{null}" noSelectionOption="true" />
+                        <f:selectItem itemLabel="Baja" itemValue="1" />
+                        <f:selectItem itemLabel="Media" itemValue="2" />
+                        <f:selectItem itemLabel="Alta" itemValue="3" />
+                        <f:selectItem itemLabel="Crítica" itemValue="4" />
+                    </p:selectOneMenu>
+
+                    <p:outputLabel value="Sensor Origen:" style="font-weight:bold" />
+                    <p:inputText value="#{incidentController.newIncident.sourceOrigin}" 
+                                 required="true" requiredMessage="El origen es obligatorio"
+                                 style="width:100%" />
+
+                    <p:spacer />
+                    <p:commandButton value="Guardar Registro" action="#{incidentController.save}" 
+                                     update="formOp" icon="pi pi-save" 
+                                     style="width: 100%; height: 40px;" 
+                                     styleClass="ui-button-info btn-blue" />
+                </h:panelGrid>
+            </p:panel>
+
+            <p:dataTable value="#{incidentController.allIncidents}" var="i" rows="10" 
+                         paginator="true" paginatorPosition="bottom"
+                         emptyMessage="No hay incidentes registrados">
+                <p:column headerText="Evento">#{i.description}</p:column>
+                <p:column headerText="Origen">#{i.sourceOrigin}</p:column>
+                <p:column headerText="Nivel" width="150">
+                    <h:outputText value="#{i.priorityText}" 
+                                 style="font-weight:bold; color: #{i.priority == 4 ? '#cc0000' : (i.priority == 3 ? '#ffcc00' : (i.priority == 2 ? '#007bff' : '#28a745'))}" />
+                </p:column>
+                <p:column headerText="Estado" width="120">
+                    <p:tag value="#{i.status}" severity="#{i.status == 'PENDIENTE' ? 'warning' : 'success'}" />
+                </p:column>
+            </p:dataTable>
+        </h:form>
+    </div>
+</h:body>
+</html>
